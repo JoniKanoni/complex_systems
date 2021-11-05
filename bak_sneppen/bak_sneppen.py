@@ -61,6 +61,7 @@ def evolution(iterations):
 
 def plots():
     ''' 
+    Führt evolution() durch.
     Macht plots.
     
     Histogram und Lawinengröße gegen Lawinendauer aufgetragen.
@@ -91,3 +92,6 @@ def plots():
     plt.ylabel('log(Beteiligte Spezies pro Lawine)')
     plt.xlabel('log(Lawinengröße (Dauer))')
     plt.savefig('Lawinensize_dauer.png')
+
+#evolution()
+#plots()
