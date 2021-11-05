@@ -2,48 +2,84 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+def evolution(iterations):
+    species = 100
+    #iterations = 10000
 
-species = 100
-iterations = 10
+    fitness = np.random.random([species])
+    lambo = 0.6
 
-fitness = np.random.random([species])
-lambo = 0.6
+    counter = 0
 
-counter = 0
+    ava_length = []
+    beteiligte = []
+    ava_dump = []
 
-ava_length = []
+    for ii in range(0,iterations):
+        
+        minimum = np.min(fitness) 
+        if minimum < lambo:
+            counter = counter +1        # +1 für jeden Zeitschritt der Lawine
+            fitness_binary = fitness < lambo
+            fitness_binary.astype(int) 
+            ava_size = np.sum(fitness_binary)
+            ava_dump.append(ava_size)
+        elif minimum > lambo:
+            ava_length.append(counter)
+            beteiligte.append(np.sum(ava_dump))
+            ava_dump = []
+            counter = 0
+        minimum_pos = np.where(fitness ==  minimum)[0][0]
 
-for ii in range(0,iterations):
-       
-    minimum = np.min(fitness) 
-    if minimum < lambo:
-        counter = counter +1        # +1 für jeden Zeitschritt der Lawine
-        fitness_binary = fitness < lambo
-        fitness_binary.astype(int) 
-        ava_size = np.sum(fitness_binary)
-    elif minimum > lambo:
-        ava_length.append(counter)
-        counter = 0
-    minimum_pos = np.where(fitness ==  minimum)[0][0]
+        fitness[minimum_pos] = np.random.random(1)
 
-    fitness[minimum_pos] = np.random.random(1)
+        if minimum_pos == 0:
+            neighbour_links = species-1
+            neighbour_rechts = minimum_pos+1
+        elif minimum_pos == species-1:
+            neighbour_rechts = 0 
+            neighbour_links = minimum_pos-1
+        else: 
+            neighbour_links = minimum_pos-1 
+            neighbour_rechts = minimum_pos+1
+        fitness[neighbour_links] = np.random.random(1)    
+        fitness[neighbour_rechts] =np.random.random(1)
+        if ii == iterations-1:
+            #print(np.mean(fitness))
+            plt.scatter( np.arange(len(fitness)), fitness)
+            plt.hlines(2/3, 0, len(fitness), color='r')
+            plt.hlines(lambo, 0, len(fitness), color='g')
+            plt.ylim((0,1))
+            plt.savefig('bak_sneppen.png')
+            plt.clf()
+    
+    np.savetxt('ava_length.txt', ava_length)
+    return beteiligte, ava_length
 
-    if minimum_pos == 0:
-        neighbour_links = species-1
-        neighbour_rechts = minimum_pos+1
-    elif minimum_pos == species-1:
-        neighbour_rechts = 0 
-        neighbour_links = minimum_pos-1
-    else: 
-        neighbour_links = minimum_pos-1 
-        neighbour_rechts = minimum_pos+1
-    fitness[neighbour_links] = np.random.random(1)    
-    fitness[neighbour_rechts] =np.random.random(1)
-    if ii == iterations-1:
-        print(np.mean(fitness))
-        plt.scatter( np.arange(len(fitness)), fitness)
-        plt.hlines(2/3, 0, len(fitness), color='r')
-        plt.hlines(lambo, 0, len(fitness), color='g')
-        plt.show()
+def plots():
+    ''' 
+    Macht plots und speichert die.
+    '''
+    bet, aval =   evolution(100000)
 
-np.savetxt('ava_length.txt', ava_length)
+    acok = np.loadtxt('ava_length.txt')
+    #print(acok)
+    sortiert =     np.sort(  acok[1:len(acok)]    ) 
+      
+    print( len( np.nonzero(sortiert)[0])                )
+
+    relevante_avalanches = sortiert[len(sortiert)-len(np.nonzero(sortiert)[0]):len(sortiert)      ]
+
+    plt.hist(np.log(relevante_avalanches), bins='auto')
+    plt.ylabel('Häufigkeit')
+    plt.xlabel('Lawinengröße')
+    plt.savefig('Histo.png')
+    plt.clf()
+    #plt.plot(np.log(np.arange(len(sortiert))), np.log(sortiert))              # remove hier die erste lawinendauer, weil die ja von einem komplett zufälligen ausgangspunkt beginnt
+    #plt.show()
+    plt.scatter(np.log(bet), np.log(aval))
+    plt.ylabel('log(Beteiligte Spezies pro Lawine)')
+    plt.xlabel('log(Lawinengröße (Dauer))')
+    plt.savefig('Lawinensize_dauer.png')
+
+plots()
