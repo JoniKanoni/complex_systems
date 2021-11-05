@@ -7,13 +7,13 @@ def evolution(iterations):
     #iterations = 10000
 
     fitness = np.random.random([species])
-    lambo = 0.6
+    lambo = 0.6                     # Grenze für Lawinenbeginn
 
-    counter = 0
+    counter = 0                     # counter zählt die Lawinenlänge(dauer)
 
-    ava_length = []
-    beteiligte = []
-    ava_dump = []
+    ava_length = [] 
+    beteiligte = []                 # zählt wie viele Spezies an der Lawine ingsgesamt beteiligt waren
+    ava_dump = []                   # Zwischenspeicher für die Beteiligten
 
     for ii in range(0,iterations):
         
@@ -33,6 +33,9 @@ def evolution(iterations):
 
         fitness[minimum_pos] = np.random.random(1)
 
+
+        # die ifs sorgen dafür, dass falls nebenan kein Nachbar mehr ist (Spezies 100 hat ja keinen rechten Nachbar) 
+        # die Spezies am anderen Ende gewählt wird
         if minimum_pos == 0:
             neighbour_links = species-1
             neighbour_rechts = minimum_pos+1
@@ -53,21 +56,28 @@ def evolution(iterations):
             plt.savefig('bak_sneppen.png')
             plt.clf()
     
-    np.savetxt('ava_length.txt', ava_length)
+    #np.savetxt('ava_length.txt', ava_length)
     return beteiligte, ava_length
 
 def plots():
     ''' 
-    Macht plots und speichert die.
+    Macht plots.
+    
+    Histogram und Lawinengröße gegen Lawinendauer aufgetragen.
     '''
     bet, aval =   evolution(100000)
+    #aval = np.loadtxt('ava_length.txt')
 
-    acok = np.loadtxt('ava_length.txt')
-    #print(acok)
-    sortiert =     np.sort(  acok[1:len(acok)]    ) 
-      
-    print( len( np.nonzero(sortiert)[0])                )
+    '''
+    Die nächsten zwei Zeilen sollten mir die Lawinendauern von 0 rausfiltern, die entstehen wenn sich zwei Zeitschritte hintereinander 
+    kein Dot unter dem Lambda befindet. Filtern wurde gemacht damit das mit dem log nicht komisch wird,   .......
+    aber das mit dem logarithmischen Histogram ist irgendwie trotzdem komisch geworden. 
+    
+    Im Ordner befindet sich log und nicht-log Histogram.
 
+    Vielleicht ist es sinnvoll die sehr kleinen Lawinen zu ignorieren (?)...
+    '''
+    sortiert =     np.sort(  aval[1:len(aval)]    ) # remove hier die erste lawinendauer, weil die ja von einem komplett zufälligen ausgangspunkt beginnt
     relevante_avalanches = sortiert[len(sortiert)-len(np.nonzero(sortiert)[0]):len(sortiert)      ]
 
     plt.hist(np.log(relevante_avalanches), bins='auto')
@@ -75,11 +85,9 @@ def plots():
     plt.xlabel('Lawinengröße')
     plt.savefig('Histo.png')
     plt.clf()
-    #plt.plot(np.log(np.arange(len(sortiert))), np.log(sortiert))              # remove hier die erste lawinendauer, weil die ja von einem komplett zufälligen ausgangspunkt beginnt
+    #plt.plot(np.log(np.arange(len(sortiert))), np.log(sortiert))    # plottet  log(Lawinendauer)         
     #plt.show()
     plt.scatter(np.log(bet), np.log(aval))
     plt.ylabel('log(Beteiligte Spezies pro Lawine)')
     plt.xlabel('log(Lawinengröße (Dauer))')
     plt.savefig('Lawinensize_dauer.png')
-
-plots()
