@@ -18,6 +18,7 @@ Der liegt bei mir irgendwo 0.8 < T_C < 1.2 oder so.
 '''
 
 
+J = 1
 
 magn = []
 N = 10
@@ -57,7 +58,7 @@ def mach_flip(N, anfangs_bedingung, iterations, inverse_temperatur):
 
     for ii in range(0,iterations):
 
-        spec_energy =  np.sum(  magnet * convolve(magnet, kernel))
+        spec_energy =  np.sum(  magnet * convolve(magnet, kernel, mode='wrap'))
 
         spec_spin = np.sum(magnet)
 
@@ -98,14 +99,20 @@ def mach_flip(N, anfangs_bedingung, iterations, inverse_temperatur):
 
 
 
+        ## WOLFF RAWR
+
+        dump = []
+        randy_spin = np.random.randomint(0,N)
+
+
+
+
         #print(diff_E)
         
-        
-        flipper = np.exp(-inverse_temperatur*diff_E)
         if diff_E <= 0:
             magnet[wo[0], wo[1]] *= -1
         elif diff_E > 0:
-            if np.random.random() < flipper:
+            if np.random.random() < np.exp(-inverse_temperatur*diff_E* J):
                 magnet[wo[0], wo[1]] *= -1 
 
         energies[ii] = spec_energy
@@ -119,7 +126,7 @@ def mach_flip(N, anfangs_bedingung, iterations, inverse_temperatur):
             
     return energies, spins
 
-
+'''
 for jj in inverse_temperatur_array:
     print(jj)
     energie, spins = mach_flip(N, anfangs_bedingung, iterations, jj)
@@ -128,3 +135,4 @@ for jj in inverse_temperatur_array:
     plt.show(block=False)
     plt.pause(4)
     plt.close()
+'''
