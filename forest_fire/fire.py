@@ -17,11 +17,6 @@ def baums():
     normie = plt.Normalize(vmin=-1, vmax=1)
 
 
-
-    
-
-
-
     iterations = 10000
 
     size= 100
