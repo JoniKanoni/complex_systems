@@ -5,7 +5,7 @@ import copy
 
 def make_pat(n):
     '''
-    Macht 3 binäre Muster als Vektor
+    Macht 3 binäre Muster als Vektor,  Matrix geht auch ist nur nicht so fun.. :)
     Seeds kann man enablen um die reproduzierbarkeit zu checken, ist aber die doofe Version der Seeds.. 
     Deswegen lieber ausmachen, weil diese Art von Seeds dann doch manchmal global sind und das Shufflen hinten beeinflussen können..
     Idk nunmp
@@ -15,7 +15,7 @@ def make_pat(n):
     #np.random.seed(1234)
     pat1 = np.random.randint(2, size=n**2) 
     pat1 = np.where(pat1==0, -1, pat1)
-
+    
     #np.random.seed(4321)
     pat2 = np.random.randint(2, size=n**2)
     pat2 = np.where(pat2==0, -1 , pat2)
@@ -30,7 +30,7 @@ def weights(n, patterns):
     initial weights
     56 connections ungleich 0 bei N=8, da keine Kopplung mit sich selbst aka Diagonale=0
     '''   
-    w_init = np.zeros((64,64)) 
+    w_init = np.zeros((n**2,n**2)) 
 
     # matrixmultiplikation und so für die weights
     
@@ -43,10 +43,17 @@ def weights(n, patterns):
 def breaker(pat):
     '''
     random noise auf pattern.
-    Ich sage, dass shufflen und randomly multiplizieren der Punkte mit +-1 genau das "gleiche" Resultat ergeben
+    Wir sagen, dass shufflen und randomly multiplizieren der Punkte mit +-1 genau das "gleiche" Resultat ergeben
+    Macht das Musster so sehr "kaputt", dass kaputtes-p1 nicht unbedingt am nähesten an p1 liegt sondern auch näher an einem Anderen
+
+
+    
     '''
     pp = np.copy(pat)
-    np.random.shuffle(pp)
+    #np.random.shuffle(pp)
+
+    pp[32:64] = -1   #bei  N=8 untere Hälfte "removen" (Teilmuster)
+
     return pp
 
 def recaller(inp, W,  iterations, bias):
@@ -54,12 +61,14 @@ def recaller(inp, W,  iterations, bias):
     Vergleicht und updatet
     hmm braucht man eigentlich nicht, aber ich habs ein bisschen zu meiner eigenen Sicherheit eingeführt
     '''
-    hmm = inp
     for ii in range(iterations):
-        new_pos = -np.matmul(hmm, W)  -bias 
-        hmm = -np.sign(new_pos)
-    return hmm
+        new_pos = np.matmul(inp, W)  -bias 
+        # hier könnte man noch die Hemming Distanz berechnen und hätte noch einen coolen Plot für Hemming(iteration)  ;)
+        inp = np.sign(new_pos)
+    return inp
 
+
+# N lieber klein lassen..
 N = 8
 
 p1, p2, p3 =  make_pat(N)
@@ -88,9 +97,11 @@ fig, axs = plt.subplots(2,3, constrained_layout=True)
 axs[0,0].imshow(p1)
 axs[0,0].set_ylabel('Pattern 1')
 axs[0,0].tick_params(axis='both', length=0, width=0, labelsize=0)
+
 axs[0,1].imshow(p2)
 axs[0,1].set_ylabel('Pattern 2')
 axs[0,1].tick_params(axis='both', length=0, width=0, labelsize=0)
+
 axs[0,2].imshow(p3)
 axs[0,2].set_ylabel('Pattern 3')
 axs[0,2].tick_params(axis='both', length=0, width=0, labelsize=0)
@@ -106,6 +117,5 @@ axs[1,1].tick_params(axis='both', length=0, width=0, labelsize=0)
 axs[1,2].imshow(membered)
 axs[1,2].set_ylabel('Remembered Pattern')
 axs[1,2].tick_params(axis='both', length=0, width=0, labelsize=0)
-
 
 plt.show()
